@@ -10,15 +10,15 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
-$(whoami)
-echo "params : $#"
+# $(whoami)
+# echo "params : $#"
 
 # Check params are passed.
-if [ "$#" -ne 3 ]; then
-  # echo "***ERROR 매개변수가 전달되지 않았습니다. 4개의 매개변수를 전달해 주세요."
-  echo "AWS key_id, access_key, 그리고 호스트존 ID, 업데이트하려는 도메인 이름입니다."
-  exit
-fi
+# if [ "$#" -ne 4 ]; then
+#   echo "***ERROR 매개변수가 전달되지 않았습니다. 4개의 매개변수를 전달해 주세요."
+#   echo "AWS key_id, access_key, 그리고 호스트존 ID, 업데이트하려는 도메인 이름입니다."
+#   exit
+# fi
 aws configure set aws_access_key_id $1
 aws configure set aws_secret_access_key $2
 aws configure set region ap-northeast-2

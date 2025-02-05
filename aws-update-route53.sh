@@ -10,6 +10,10 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
+# 사용자 이름 입력 받기
+read -p "이름을 입력하세요: " USERNAME
+exit 0
+
 $(aws configure)
 sleep 5
 # Check params are passed.

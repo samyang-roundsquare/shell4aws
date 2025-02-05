@@ -17,12 +17,12 @@ rm /etc/localtime
 ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # sudo vi /etc/sysconfig/clock
-# echo 'ZONE="Asia/Seoul"
-# UTC=true' > /etc/sysconfig/clock
-cat <<EOF > /etc/sysconfig/clock
-ZONE="Asia/Seoul"
-UTC=true
-EOF
+echo 'ZONE="Asia/Seoul"
+UTC=true' > /etc/sysconfig/clock
+# cat <<EOF > /etc/sysconfig/clock
+# ZONE="Asia/Seoul"
+# UTC=true
+# EOF
 cat /etc/sysconfig/clock
 
 if command -v apt-get &>/dev/null; then

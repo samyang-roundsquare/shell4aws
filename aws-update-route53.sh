@@ -17,8 +17,8 @@ fi
 #   echo "The hosted zone ID, the domain name you are about to update."
 #   exit
 # fi
-printf '사용하실 도메인을 입력해 주세요.'
-read $domain
+echo '사용하실 도메인을 입력해 주세요.'
+read domain
 
 # Define the JSON payload to send to Route53.
 UPDATE_REQUEST='

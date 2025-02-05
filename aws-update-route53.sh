@@ -10,21 +10,15 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
-# 사용자 이름 입력 받기
-read -p "이름을 입력하세요: " USERNAME
-exit 0
-
-$(aws configure)
-sleep 5
 # Check params are passed.
-# if [ "$#" -ne 4 ]; then
-#   echo "***ERROR Parameters not passed. You need to pass two parameters:"
-#   echo "The hosted zone ID, the domain name you are about to update."
-#   exit
-# fi
-read -p '사용하실 도메인을 입력해 주세요.' domain
-# read domain
-sleep 5
+if [ "$#" -ne 4 ]; then
+  echo "***ERROR 매개변수가 전달되지 않았습니다. 4개의 매개변수를 전달해 주세요."
+  echo "AWS key_id, access_key, 그리고 호스트존 ID, 업데이트하려는 도메인 이름입니다."
+  exit
+fi
+aws configure set aws_access_key_id $1
+aws configure set aws_secret_access_key $2
+aws configure set region ap-northeast-2
 
 # Define the JSON payload to send to Route53.
 UPDATE_REQUEST='
@@ -63,11 +57,11 @@ if [ "$CURRENT_IP" == "$PREVIOUS_IP" ]; then
   logger -s "IP not changed (IP: $CURRENT_IP)"
 else
   logger -s "IP changed (Before: $PREVIOUS_IP, Now: $CURRENT_IP)"
-  UPDATE_REQUEST=$(echo $UPDATE_REQUEST | sed s/__domain__/$2/)
+  UPDATE_REQUEST=$(echo $UPDATE_REQUEST | sed s/__domain__/$4/)
   UPDATE_REQUEST=$(echo $UPDATE_REQUEST | sed s/__ip__/$CURRENT_IP/)
   #echo $UPDATE_REQUEST
   echo $UPDATE_REQUEST > /tmp/ipupdate-request.json
   aws route53 change-resource-record-sets \
-        --hosted-zone-id $domain \
+        --hosted-zone-id $3 \
         --change-batch file:///tmp/ipupdate-request.json
 fi

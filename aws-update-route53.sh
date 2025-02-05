@@ -11,7 +11,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # Check params are passed.
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 3 ]; then
   echo "***ERROR 매개변수가 전달되지 않았습니다. 4개의 매개변수를 전달해 주세요."
   echo "AWS key_id, access_key, 그리고 호스트존 ID, 업데이트하려는 도메인 이름입니다."
   exit

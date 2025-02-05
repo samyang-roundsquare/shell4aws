@@ -25,32 +25,32 @@ UTC=true' > /etc/sysconfig/clock
 # EOF
 cat /etc/sysconfig/clock
 
-if command -v apt-get &>/dev/null; then
-    apt-get update && apt-get install -y cronie
-elif command -v yum &>/dev/null; then
+# if command -v apt-get &>/dev/null; then
+#     apt-get update && apt-get install -y cronie
+# elif command -v yum &>/dev/null; then
     yum updata -y && yum upgrade -y && yum install -y cronie
-elif command -v dnf &>/dev/null; then
-    dnf install -y cronie
-elif command -v pacman &>/dev/null; then
-    pacman -Sy --noconfirm cronie
-else
-    echo "지원되지 않는 패키지 관리자입니다."
+# elif command -v dnf &>/dev/null; then
+#     dnf install -y cronie
+# elif command -v pacman &>/dev/null; then
+#     pacman -Sy --noconfirm cronie
+# else
+#     echo "지원되지 않는 패키지 관리자입니다."
 
 systemctl enable crond
 systemctl start crond
 
 ## AWS EC2 인스턴스에 Docker Install 하기
 # Docker Install
-if command -v apt-get &>/dev/null; then
-    apt-get install -y docker
-elif command -v yum &>/dev/null; then
+# if command -v apt-get &>/dev/null; then
+#     apt-get install -y docker
+# elif command -v yum &>/dev/null; then
     yum install -y docker
-elif command -v dnf &>/dev/null; then
-    dnf install -y docker
-elif command -v pacman &>/dev/null; then
-    pacman -Sy --noconfirm docker
-else
-    echo "지원되지 않는 패키지 관리자입니다."
+# elif command -v dnf &>/dev/null; then
+#     dnf install -y docker
+# elif command -v pacman &>/dev/null; then
+#     pacman -Sy --noconfirm docker
+# else
+#     echo "지원되지 않는 패키지 관리자입니다."
 
 # Docker group을 새로 만들고 ec2-user 그룹에 편입
 usermod -aG docker ec2-user

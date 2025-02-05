@@ -10,7 +10,8 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
-# aws configure
+aws configure
+sleep 5
 # Check params are passed.
 # if [ "$#" -ne 4 ]; then
 #   echo "***ERROR Parameters not passed. You need to pass two parameters:"
@@ -19,6 +20,7 @@ fi
 # fi
 read -p '사용하실 도메인을 입력해 주세요.' domain
 # read domain
+sleep 5
 
 # Define the JSON payload to send to Route53.
 UPDATE_REQUEST='

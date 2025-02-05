@@ -10,14 +10,14 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
-# `aws configure`
+# aws configure
 # Check params are passed.
 # if [ "$#" -ne 4 ]; then
 #   echo "***ERROR Parameters not passed. You need to pass two parameters:"
 #   echo "The hosted zone ID, the domain name you are about to update."
 #   exit
 # fi
-`printf '사용하실 도메인을 입력해 주세요.'`
+printf '사용하실 도메인을 입력해 주세요.'
 read $domain
 
 # Define the JSON payload to send to Route53.

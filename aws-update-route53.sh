@@ -10,7 +10,7 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
-# $(whoami)
+whoami
 # echo "params : $#"
 
 # Check params are passed.
@@ -19,7 +19,6 @@ fi
 #   echo "AWS key_id, access_key, 그리고 호스트존 ID, 업데이트하려는 도메인 이름입니다."
 #   exit
 # fi
-
 aws configure set aws_access_key_id $1
 aws configure set aws_secret_access_key $2
 aws configure set region ap-northeast-2

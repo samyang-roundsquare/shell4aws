@@ -11,14 +11,15 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # Check params are passed.
-# if [ "$#" -ne 2 ]; then
-#   echo "***ERROR Parameters not passed. You need to pass two parameters:"
-#   echo "The hosted zone ID, the domain name you are about to update."
-#   exit
-# fi
-aws configure
-printf '사용하실 도메인을 입력해 주세요.'
-read $domain
+if [ "$#" -ne 4 ]; then
+  echo "***ERROR Parameters not passed. You need to pass two parameters:"
+  echo "The hosted zone ID, the domain name you are about to update."
+  exit
+fi
+aws configure set aws_access_key_id $1
+aws configure set aws_secret_access_key $2
+# printf '사용하실 도메인을 입력해 주세요.'
+# read $domain
 
 # Define the JSON payload to send to Route53.
 UPDATE_REQUEST='
@@ -62,6 +63,6 @@ else
   #echo $UPDATE_REQUEST
   echo $UPDATE_REQUEST > /tmp/ipupdate-request.json
   aws route53 change-resource-record-sets \
-        --hosted-zone-id $domain \
+        --hosted-zone-id $3 \
         --change-batch file:///tmp/ipupdate-request.json
 fi

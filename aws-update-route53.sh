@@ -10,6 +10,9 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
+whoami
+echo "params : $#"
+
 # Check params are passed.
 if [ "$#" -ne 3 ]; then
   echo "***ERROR 매개변수가 전달되지 않았습니다. 4개의 매개변수를 전달해 주세요."

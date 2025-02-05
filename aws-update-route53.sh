@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/sh
 # 루트 사용자 변경 (간단하게 sudo -i 실행)
 if [ "$(id -u)" -ne 0 ]; then
     echo "현재 사용자가 루트가 아닙니다. 루트 권한을 얻기 위해 sudo -i를 실행합니다."

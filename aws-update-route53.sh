@@ -10,7 +10,7 @@ if [ "$(id -u)" -ne 0 ]; then
     fi
 fi
 
-`aws configure`
+# `aws configure`
 # Check params are passed.
 # if [ "$#" -ne 4 ]; then
 #   echo "***ERROR Parameters not passed. You need to pass two parameters:"

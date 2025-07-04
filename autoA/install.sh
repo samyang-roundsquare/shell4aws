@@ -313,35 +313,46 @@ manual_download_guide() {
     echo "   - 시크릿/프라이빗 모드에서 시도"
     echo ""
     
-    # 브라우저에서 URL 열기
-    if command -v open &> /dev/null; then
-        log_info "브라우저에서 다운로드 페이지를 엽니다..."
-        open "$url"
-    fi
-    
-    # 사용자에게 대기 요청
-    echo ""
-    read -p "파일을 다운로드한 후 Enter 키를 눌러 계속하세요..."
-    
-    # 다운로드된 파일 확인
-    if [[ -f "$output_file" ]]; then
-        local file_size=$(du -h "$output_file" | cut -f1)
-        local file_size_bytes=$(stat -f%z "$output_file" 2>/dev/null || stat -c%s "$output_file" 2>/dev/null || echo 0)
-        
-        # 파일 크기 검사
-        if [[ $file_size_bytes -lt 10000 ]]; then
-            log_warning "다운로드된 파일이 너무 작습니다 ($file_size_bytes bytes)."
-            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$output_file"; then
-                log_error "HTML 페이지가 다운로드되었습니다. 올바른 파일을 다운로드해주세요."
-                return 1
-            fi
+    # curl로 실행 중인지 확인
+    if [[ "${BASH_SOURCE[0]}" == *"curl"* ]] || [[ -z "${BASH_SOURCE[0]}" ]]; then
+        log_info "curl로 실행 중이므로 브라우저를 자동으로 열 수 없습니다."
+        log_info "위의 URL을 복사하여 브라우저에서 직접 접속해주세요."
+        echo ""
+        log_info "다운로드 완료 후 다음 명령어로 스크립트를 다시 실행하세요:"
+        echo "   curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh | bash"
+        echo ""
+        return 1
+    else
+        # 브라우저에서 URL 열기
+        if command -v open &> /dev/null; then
+            log_info "브라우저에서 다운로드 페이지를 엽니다..."
+            open "$url"
         fi
         
-        log_success "파일이 확인되었습니다! 크기: $file_size"
-        return 0
-    else
-        log_error "파일을 찾을 수 없습니다: $output_file"
-        return 1
+        # 사용자에게 대기 요청
+        echo ""
+        read -p "파일을 다운로드한 후 Enter 키를 눌러 계속하세요..."
+        
+        # 다운로드된 파일 확인
+        if [[ -f "$output_file" ]]; then
+            local file_size=$(du -h "$output_file" | cut -f1)
+            local file_size_bytes=$(stat -f%z "$output_file" 2>/dev/null || stat -c%s "$output_file" 2>/dev/null || echo 0)
+            
+            # 파일 크기 검사
+            if [[ $file_size_bytes -lt 10000 ]]; then
+                log_warning "다운로드된 파일이 너무 작습니다 ($file_size_bytes bytes)."
+                if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$output_file"; then
+                    log_error "HTML 페이지가 다운로드되었습니다. 올바른 파일을 다운로드해주세요."
+                    return 1
+                fi
+            fi
+            
+            log_success "파일이 확인되었습니다! 크기: $file_size"
+            return 0
+        else
+            log_error "파일을 찾을 수 없습니다: $output_file"
+            return 1
+        fi
     fi
 }
 
@@ -434,7 +445,28 @@ download_google_drive_file() {
     done
     
     # 모든 자동 방법이 실패한 경우 수동 다운로드 안내
-    manual_download_guide "$url" "$output_file" "$file_id"
+    if manual_download_guide "$url" "$output_file" "$file_id"; then
+        return 0
+    else
+        # curl로 실행 중이고 수동 다운로드도 실패한 경우
+        if [[ "${BASH_SOURCE[0]}" == *"curl"* ]] || [[ -z "${BASH_SOURCE[0]}" ]]; then
+            log_error "curl로 실행 중이므로 수동 다운로드가 제한됩니다."
+            log_info "다음 방법으로 로컬에서 실행해주세요:"
+            echo ""
+            echo "1. 스크립트 다운로드:"
+            echo "   curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh -o install.sh"
+            echo ""
+            echo "2. 실행 권한 부여:"
+            echo "   chmod +x install.sh"
+            echo ""
+            echo "3. 스크립트 실행:"
+            echo "   ./install.sh"
+            echo ""
+            log_info "로컬에서 실행하면 브라우저 자동 실행 및 수동 다운로드 가이드가 정상 작동합니다."
+            exit 1
+        fi
+        return 1
+    fi
 }
 
 # =============================================================================
@@ -769,6 +801,24 @@ main() {
     log_info "=== shell4aws macOS 설치 시작 (통합 버전) ==="
     log_info "설치 시간: $(date)"
     log_info "현재 디렉토리: $(pwd)"
+    
+    # curl로 실행 중인지 확인
+    if [[ "${BASH_SOURCE[0]}" == *"curl"* ]] || [[ -z "${BASH_SOURCE[0]}" ]]; then
+        log_warning "curl로 실행 중입니다. 일부 기능이 제한될 수 있습니다."
+        log_info "더 나은 경험을 위해 로컬에 스크립트를 다운로드하여 실행하는 것을 권장합니다."
+        echo ""
+        log_info "로컬 다운로드 방법:"
+        echo "   curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh -o install.sh"
+        echo "   chmod +x install.sh"
+        echo "   ./install.sh"
+        echo ""
+        read -p "계속 진행하시겠습니까? (y/N): " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            log_info "설치가 취소되었습니다."
+            exit 0
+        fi
+    fi
     
     # 스크립트 디렉토리 저장 (다운로드 헬퍼 경로용)
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

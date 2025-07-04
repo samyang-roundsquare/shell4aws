@@ -6,9 +6,26 @@
 ### 빠른 시작
 macOS 사용자는 다음 명령어로 자동 설치를 진행할 수 있습니다:
 
+#### 방법 1: curl로 직접 실행 (간단하지만 제한적)
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh)"
 ```
+
+#### 방법 2: 로컬 다운로드 후 실행 (권장)
+```bash
+# 스크립트 다운로드
+curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh -o install.sh
+
+# 실행 권한 부여
+chmod +x install.sh
+
+# 스크립트 실행
+./install.sh
+```
+
+**💡 실행 방법별 차이점:**
+- **curl 직접 실행**: 간단하지만 브라우저 자동 실행 및 수동 다운로드 가이드 제한
+- **로컬 실행**: 모든 기능 정상 작동, 브라우저 자동 실행, 상세한 수동 다운로드 가이드
 
 **💡 통합 버전의 장점:**
 - 단일 파일로 모든 기능 포함
@@ -134,6 +151,11 @@ Google Drive는 큰 파일의 직접 다운로드를 제한할 수 있습니다.
 2. '다운로드' 버튼을 클릭
 3. 파일을 `autoA` 디렉토리에 저장
 4. 스크립트를 다시 실행
+
+**💡 curl 실행 시 주의사항:**
+- curl로 직접 실행하면 브라우저 자동 실행이 제한됩니다
+- 수동 다운로드 가이드가 제한적으로 작동할 수 있습니다
+- 로컬에서 스크립트를 실행하면 모든 기능이 정상 작동합니다
 
 **파일 위치:**
 - 서버 이미지: `server_image.tar.gz`

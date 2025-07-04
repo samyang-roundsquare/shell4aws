@@ -618,6 +618,43 @@ check_docker_service() {
 download_server_image() {
     log_info "3-1단계: 서버 이미지 다운로드 중..."
     
+    # 현재 디렉토리에서 기존 파일 확인
+    if [[ -f "server_image.tar.gz" ]]; then
+        log_info "현재 디렉토리에서 기존 server_image.tar.gz 파일을 발견했습니다."
+        
+        # 파일 크기 확인
+        local file_size=$(du -h server_image.tar.gz | cut -f1)
+        local file_size_bytes=$(stat -f%z server_image.tar.gz 2>/dev/null || stat -c%s server_image.tar.gz 2>/dev/null || echo 0)
+        
+        log_info "기존 파일 크기: $file_size"
+        
+        # 파일이 너무 작은지 확인 (HTML 페이지일 가능성)
+        if [[ $file_size_bytes -lt 10000 ]]; then
+            log_warning "기존 파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" server_image.tar.gz; then
+                log_error "기존 파일이 HTML 페이지입니다. 삭제하고 다시 다운로드합니다."
+                rm -f server_image.tar.gz
+            else
+                log_info "파일이 유효한 것으로 보입니다. 계속 진행합니다."
+            fi
+        else
+            # tar.gz 파일 유효성 검사
+            if tar -tzf server_image.tar.gz > /dev/null 2>&1; then
+                log_success "기존 서버 이미지 파일 유효성 검사 통과"
+                log_info "기존 파일을 사용합니다. 다운로드를 스킵합니다."
+                
+                # 임시 디렉토리 생성 (다른 단계에서 사용)
+                TEMP_DIR=$(mktemp -d)
+                cp server_image.tar.gz "$TEMP_DIR/"
+                cd "$TEMP_DIR"
+                return 0
+            else
+                log_warning "기존 파일이 유효한 tar.gz 형식이 아닙니다. 다시 다운로드합니다."
+                rm -f server_image.tar.gz
+            fi
+        fi
+    fi
+    
     # 임시 디렉토리 생성
     TEMP_DIR=$(mktemp -d)
     cd "$TEMP_DIR"
@@ -708,6 +745,43 @@ check_server_status() {
 # 4. 에이전트 패키지 다운로드
 download_agent_package() {
     log_info "4단계: 에이전트 패키지 다운로드 중..."
+    
+    # 현재 디렉토리에서 기존 파일 확인
+    if [[ -f "agent.pkg" ]]; then
+        log_info "현재 디렉토리에서 기존 agent.pkg 파일을 발견했습니다."
+        
+        # 파일 크기 확인
+        local file_size=$(du -h agent.pkg | cut -f1)
+        local file_size_bytes=$(stat -f%z agent.pkg 2>/dev/null || stat -c%s agent.pkg 2>/dev/null || echo 0)
+        
+        log_info "기존 파일 크기: $file_size"
+        
+        # 파일이 너무 작은지 확인 (HTML 페이지일 가능성)
+        if [[ $file_size_bytes -lt 10000 ]]; then
+            log_warning "기존 파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" agent.pkg; then
+                log_error "기존 파일이 HTML 페이지입니다. 삭제하고 다시 다운로드합니다."
+                rm -f agent.pkg
+            else
+                log_info "파일이 유효한 것으로 보입니다. 계속 진행합니다."
+            fi
+        else
+            # pkg 파일 유효성 검사
+            if file agent.pkg | grep -q "xar archive\|Mac OS X installer package"; then
+                log_success "기존 에이전트 패키지 파일 유효성 검사 통과"
+                log_info "기존 파일을 사용합니다. 다운로드를 스킵합니다."
+                
+                # 임시 디렉토리 생성 (다른 단계에서 사용)
+                AGENT_TEMP_DIR=$(mktemp -d)
+                cp agent.pkg "$AGENT_TEMP_DIR/"
+                cd "$AGENT_TEMP_DIR"
+                return 0
+            else
+                log_warning "기존 파일이 유효한 pkg 형식이 아닐 수 있습니다. 다시 다운로드합니다."
+                rm -f agent.pkg
+            fi
+        fi
+    fi
     
     # 임시 디렉토리 생성
     AGENT_TEMP_DIR=$(mktemp -d)
@@ -837,6 +911,25 @@ main() {
     log_info "   Google Drive는 큰 파일의 직접 다운로드를 제한할 수 있습니다."
     log_info "   자동 다운로드가 실패하면 수동 다운로드 가이드가 제공됩니다."
     log_info "   통합된 다운로드 기능으로 다양한 방법을 자동으로 시도합니다."
+    echo ""
+    
+    # 기존 파일 확인 안내
+    log_info "📁 기존 파일 확인:"
+    if [[ -f "server_image.tar.gz" ]]; then
+        local server_size=$(du -h server_image.tar.gz | cut -f1)
+        log_info "   ✅ server_image.tar.gz 발견 (크기: $server_size)"
+    else
+        log_info "   ❌ server_image.tar.gz 없음"
+    fi
+    
+    if [[ -f "agent.pkg" ]]; then
+        local agent_size=$(du -h agent.pkg | cut -f1)
+        log_info "   ✅ agent.pkg 발견 (크기: $agent_size)"
+    else
+        log_info "   ❌ agent.pkg 없음"
+    fi
+    
+    log_info "   💡 기존 파일이 있으면 다운로드를 스킵하고 재사용합니다."
     echo ""
     
     # 사용자 확인

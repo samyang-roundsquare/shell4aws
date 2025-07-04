@@ -83,6 +83,13 @@ download_with_curl() {
         else
             # 확인 토큰이 없으면 첫 번째 응답이 실제 파일일 수 있음
             if [[ -s "$temp_file" ]]; then
+                # 파일이 HTML 페이지인지 확인 (Google Drive 오류 페이지)
+                if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$temp_file"; then
+                    log_warning "Google Drive에서 HTML 페이지를 받았습니다. 확인 토큰이 필요할 수 있습니다."
+                    rm -f "$temp_file" "$cookies_file"
+                    return 1
+                fi
+                
                 mv "$temp_file" "$output_file"
                 log_success "curl 다운로드 성공 (직접 다운로드)"
                 rm -f "$cookies_file"
@@ -124,6 +131,13 @@ download_with_wget() {
                 fi
             else
                 if [[ -s "$temp_file" ]]; then
+                    # 파일이 HTML 페이지인지 확인 (Google Drive 오류 페이지)
+                    if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$temp_file"; then
+                        log_warning "Google Drive에서 HTML 페이지를 받았습니다. 확인 토큰이 필요할 수 있습니다."
+                        rm -f "$temp_file" "$cookies_file"
+                        return 1
+                    fi
+                    
                     mv "$temp_file" "$output_file"
                     log_success "wget 다운로드 성공 (직접 다운로드)"
                     rm -f "$cookies_file"
@@ -214,6 +228,62 @@ EOF
     return 1
 }
 
+# 방법 5: 강화된 curl 다운로드 (User-Agent 및 추가 헤더 사용)
+download_with_curl_enhanced() {
+    local file_id="$1"
+    local output_file="$2"
+    
+    log_info "강화된 curl 다운로드를 시도 중..."
+    
+    # User-Agent와 추가 헤더를 사용한 다운로드
+    local user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    local url="https://drive.google.com/uc?export=download&id=$file_id"
+    
+    # 첫 번째 요청으로 쿠키와 확인 토큰 가져오기
+    local temp_file=$(mktemp)
+    local cookies_file=$(mktemp)
+    
+    if curl -A "$user_agent" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+           -H "Accept-Language: en-US,en;q=0.5" \
+           -H "Accept-Encoding: gzip, deflate" \
+           -H "Connection: keep-alive" \
+           -H "Upgrade-Insecure-Requests: 1" \
+           -c "$cookies_file" -L -o "$temp_file" "$url"; then
+        
+        # 확인 토큰 추출
+        local confirm_token=$(grep -o 'confirm=[^&]*' "$temp_file" | cut -d'=' -f2)
+        
+        if [[ -n "$confirm_token" ]]; then
+            log_info "확인 토큰 발견: $confirm_token"
+            local download_url="https://drive.google.com/uc?export=download&confirm=${confirm_token}&id=$file_id"
+            
+            if curl -A "$user_agent" -b "$cookies_file" -L -o "$output_file" "$download_url"; then
+                log_success "강화된 curl 다운로드 성공 (확인 토큰 사용)"
+                rm -f "$temp_file" "$cookies_file"
+                return 0
+            fi
+        else
+            # HTML 페이지 확인
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$temp_file"; then
+                log_warning "Google Drive에서 HTML 페이지를 받았습니다."
+                rm -f "$temp_file" "$cookies_file"
+                return 1
+            fi
+            
+            if [[ -s "$temp_file" ]]; then
+                mv "$temp_file" "$output_file"
+                log_success "강화된 curl 다운로드 성공 (직접 다운로드)"
+                rm -f "$cookies_file"
+                return 0
+            fi
+        fi
+    fi
+    
+    rm -f "$temp_file" "$cookies_file"
+    log_warning "강화된 curl 다운로드 실패"
+    return 1
+}
+
 # 수동 다운로드 안내 (개선된 버전)
 manual_download_guide() {
     local url="$1"
@@ -234,6 +304,13 @@ manual_download_guide() {
     echo "💡 팁:"
     echo "   - 파일이 크면 Google Drive에서 '다운로드할 수 없습니다' 메시지가 나타날 수 있습니다"
     echo "   - 이 경우 '다운로드' 버튼을 우클릭하여 '다른 이름으로 저장'을 선택하세요"
+    echo "   - 또는 '다운로드' 버튼을 클릭한 후 '다운로드할 수 없습니다' 메시지가 나오면"
+    echo "     '다운로드' 버튼을 다시 클릭하거나 우클릭하여 '다른 이름으로 저장'을 선택하세요"
+    echo ""
+    echo "🔄 대안 방법:"
+    echo "   - Google Drive 앱을 사용하여 파일을 다운로드"
+    echo "   - 다른 브라우저로 시도"
+    echo "   - 시크릿/프라이빗 모드에서 시도"
     echo ""
     
     # 브라우저에서 URL 열기
@@ -249,6 +326,17 @@ manual_download_guide() {
     # 다운로드된 파일 확인
     if [[ -f "$output_file" ]]; then
         local file_size=$(du -h "$output_file" | cut -f1)
+        local file_size_bytes=$(stat -f%z "$output_file" 2>/dev/null || stat -c%s "$output_file" 2>/dev/null || echo 0)
+        
+        # 파일 크기 검사
+        if [[ $file_size_bytes -lt 10000 ]]; then
+            log_warning "다운로드된 파일이 너무 작습니다 ($file_size_bytes bytes)."
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$output_file"; then
+                log_error "HTML 페이지가 다운로드되었습니다. 올바른 파일을 다운로드해주세요."
+                return 1
+            fi
+        fi
+        
         log_success "파일이 확인되었습니다! 크기: $file_size"
         return 0
     else
@@ -270,6 +358,18 @@ validate_downloaded_file() {
     if [[ ! -s "$file_path" ]]; then
         log_error "파일이 비어있습니다: $file_path"
         return 1
+    fi
+    
+    # 파일 크기 확인 (너무 작은 파일은 HTML 페이지일 가능성)
+    local file_size_bytes=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path" 2>/dev/null || echo 0)
+    if [[ $file_size_bytes -lt 10000 ]]; then  # 10KB 미만
+        log_warning "파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
+        
+        # HTML 페이지인지 확인
+        if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$file_path"; then
+            log_error "다운로드된 파일이 HTML 페이지입니다. Google Drive에서 오류 페이지를 받았습니다."
+            return 1
+        fi
     fi
     
     # 파일 타입별 검사
@@ -316,7 +416,7 @@ download_google_drive_file() {
     fi
     
     # 다양한 다운로드 방법 시도
-    local methods=("download_with_curl" "download_with_wget" "download_with_gdown" "download_with_rclone")
+    local methods=("download_with_curl" "download_with_curl_enhanced" "download_with_wget" "download_with_gdown" "download_with_rclone")
     
     for method in "${methods[@]}"; do
         log_info "방법 시도: $method"

@@ -619,38 +619,38 @@ download_server_image() {
     log_info "3-1단계: 서버 이미지 다운로드 중..."
     
     # 현재 디렉토리에서 기존 파일 확인
-    if [[ -f "server_image.tar.gz" ]]; then
-        log_info "현재 디렉토리에서 기존 server_image.tar.gz 파일을 발견했습니다."
+    if [[ -f "autoa-mcp-server.tar" ]]; then
+        log_info "현재 디렉토리에서 기존 autoa-mcp-server.tar 파일을 발견했습니다."
         
         # 파일 크기 확인
-        local file_size=$(du -h server_image.tar.gz | cut -f1)
-        local file_size_bytes=$(stat -f%z server_image.tar.gz 2>/dev/null || stat -c%s server_image.tar.gz 2>/dev/null || echo 0)
+        local file_size=$(du -h autoa-mcp-server.tar | cut -f1)
+        local file_size_bytes=$(stat -f%z autoa-mcp-server.tar 2>/dev/null || stat -c%s autoa-mcp-server.tar 2>/dev/null || echo 0)
         
         log_info "기존 파일 크기: $file_size"
         
         # 파일이 너무 작은지 확인 (HTML 페이지일 가능성)
         if [[ $file_size_bytes -lt 10000 ]]; then
             log_warning "기존 파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
-            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" server_image.tar.gz; then
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" autoa-mcp-server.tar; then
                 log_error "기존 파일이 HTML 페이지입니다. 삭제하고 다시 다운로드합니다."
-                rm -f server_image.tar.gz
+                rm -f autoa-mcp-server.tar
             else
                 log_info "파일이 유효한 것으로 보입니다. 계속 진행합니다."
             fi
         else
             # tar.gz 파일 유효성 검사
-            if tar -tzf server_image.tar.gz > /dev/null 2>&1; then
+            if tar -tzf autoa-mcp-server.tar > /dev/null 2>&1; then
                 log_success "기존 서버 이미지 파일 유효성 검사 통과"
                 log_info "기존 파일을 사용합니다. 다운로드를 스킵합니다."
                 
                 # 임시 디렉토리 생성 (다른 단계에서 사용)
                 TEMP_DIR=$(mktemp -d)
-                cp server_image.tar.gz "$TEMP_DIR/"
+                cp autoa-mcp-server.tar "$TEMP_DIR/"
                 cd "$TEMP_DIR"
                 return 0
             else
                 log_warning "기존 파일이 유효한 tar.gz 형식이 아닙니다. 다시 다운로드합니다."
-                rm -f server_image.tar.gz
+                rm -f autoa-mcp-server.tar
             fi
         fi
     fi
@@ -665,16 +665,16 @@ download_server_image() {
     log_info "URL: $SERVER_FILE_URL"
     
     # 통합된 다운로드 함수 사용
-    if download_google_drive_file "$SERVER_FILE_URL" "server_image.tar.gz"; then
+    if download_google_drive_file "$SERVER_FILE_URL" "autoa-mcp-server.tar"; then
         log_success "서버 이미지 다운로드 완료"
         
         # 파일 유효성 검사
-        if [[ -f "server_image.tar.gz" && -s "server_image.tar.gz" ]]; then
-            local file_size=$(du -h server_image.tar.gz | cut -f1)
+        if [[ -f "autoa-mcp-server.tar" && -s "autoa-mcp-server.tar" ]]; then
+            local file_size=$(du -h autoa-mcp-server.tar | cut -f1)
             log_info "다운로드된 파일 크기: $file_size"
             
             # tar.gz 파일 유효성 검사
-            if tar -tzf server_image.tar.gz > /dev/null 2>&1; then
+            if tar -tzf autoa-mcp-server.tar > /dev/null 2>&1; then
                 log_success "서버 이미지 파일 유효성 검사 통과"
             else
                 log_error "다운로드된 파일이 유효한 tar.gz 형식이 아닙니다"
@@ -704,7 +704,7 @@ setup_server_container() {
     
     # 이미지 로드
     log_info "Docker 이미지 로드 중..."
-    if docker load -i server_image.tar.gz; then
+    if docker load -i autoa-mcp-server.tar; then
         log_success "Docker 이미지 로드 완료"
     else
         log_error "Docker 이미지 로드 실패"
@@ -747,38 +747,38 @@ download_agent_package() {
     log_info "4단계: 에이전트 패키지 다운로드 중..."
     
     # 현재 디렉토리에서 기존 파일 확인
-    if [[ -f "agent.pkg" ]]; then
-        log_info "현재 디렉토리에서 기존 agent.pkg 파일을 발견했습니다."
+    if [[ -f "AutoA-Installer.pkg" ]]; then
+        log_info "현재 디렉토리에서 기존 AutoA-Installer.pkg 파일을 발견했습니다."
         
         # 파일 크기 확인
-        local file_size=$(du -h agent.pkg | cut -f1)
-        local file_size_bytes=$(stat -f%z agent.pkg 2>/dev/null || stat -c%s agent.pkg 2>/dev/null || echo 0)
+        local file_size=$(du -h AutoA-Installer.pkg | cut -f1)
+        local file_size_bytes=$(stat -f%z AutoA-Installer.pkg 2>/dev/null || stat -c%s AutoA-Installer.pkg 2>/dev/null || echo 0)
         
         log_info "기존 파일 크기: $file_size"
         
         # 파일이 너무 작은지 확인 (HTML 페이지일 가능성)
         if [[ $file_size_bytes -lt 10000 ]]; then
             log_warning "기존 파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
-            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" agent.pkg; then
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" AutoA-Installer.pkg; then
                 log_error "기존 파일이 HTML 페이지입니다. 삭제하고 다시 다운로드합니다."
-                rm -f agent.pkg
+                rm -f AutoA-Installer.pkg
             else
                 log_info "파일이 유효한 것으로 보입니다. 계속 진행합니다."
             fi
         else
             # pkg 파일 유효성 검사
-            if file agent.pkg | grep -q "xar archive\|Mac OS X installer package"; then
+            if file AutoA-Installer.pkg | grep -q "xar archive\|Mac OS X installer package"; then
                 log_success "기존 에이전트 패키지 파일 유효성 검사 통과"
                 log_info "기존 파일을 사용합니다. 다운로드를 스킵합니다."
                 
                 # 임시 디렉토리 생성 (다른 단계에서 사용)
                 AGENT_TEMP_DIR=$(mktemp -d)
-                cp agent.pkg "$AGENT_TEMP_DIR/"
+                cp AutoA-Installer.pkg "$AGENT_TEMP_DIR/"
                 cd "$AGENT_TEMP_DIR"
                 return 0
             else
                 log_warning "기존 파일이 유효한 pkg 형식이 아닐 수 있습니다. 다시 다운로드합니다."
-                rm -f agent.pkg
+                rm -f AutoA-Installer.pkg
             fi
         fi
     fi
@@ -793,16 +793,16 @@ download_agent_package() {
     log_info "URL: $AGENT_FILE_URL"
     
     # 통합된 다운로드 함수 사용
-    if download_google_drive_file "$AGENT_FILE_URL" "agent.pkg"; then
+    if download_google_drive_file "$AGENT_FILE_URL" "AutoA-Installer.pkg"; then
         log_success "에이전트 패키지 다운로드 완료"
         
         # 파일 유효성 검사
-        if [[ -f "agent.pkg" && -s "agent.pkg" ]]; then
-            local file_size=$(du -h agent.pkg | cut -f1)
+        if [[ -f "AutoA-Installer.pkg" && -s "AutoA-Installer.pkg" ]]; then
+            local file_size=$(du -h AutoA-Installer.pkg | cut -f1)
             log_info "다운로드된 파일 크기: $file_size"
             
             # pkg 파일 유효성 검사
-            if file agent.pkg | grep -q "xar archive\|Mac OS X installer package"; then
+            if file AutoA-Installer.pkg | grep -q "xar archive\|Mac OS X installer package"; then
                 log_success "에이전트 패키지 파일 유효성 검사 통과"
             else
                 log_warning "다운로드된 파일이 macOS 패키지 형식이 아닐 수 있습니다"
@@ -826,9 +826,9 @@ install_agent_package() {
     # 관리자 권한 확인
     if [[ $EUID -ne 0 ]]; then
         log_info "관리자 권한으로 패키지 설치를 진행합니다..."
-        sudo installer -pkg agent.pkg -target /
+        sudo installer -pkg AutoA-Installer.pkg -target /
     else
-        installer -pkg agent.pkg -target /
+        installer -pkg AutoA-Installer.pkg -target /
     fi
     
     log_success "에이전트 패키지 설치 완료"
@@ -915,18 +915,18 @@ main() {
     
     # 기존 파일 확인 안내
     log_info "📁 기존 파일 확인:"
-    if [[ -f "server_image.tar.gz" ]]; then
-        local server_size=$(du -h server_image.tar.gz | cut -f1)
-        log_info "   ✅ server_image.tar.gz 발견 (크기: $server_size)"
+    if [[ -f "autoa-mcp-server.tar" ]]; then
+        local server_size=$(du -h autoa-mcp-server.tar | cut -f1)
+        log_info "   ✅ autoa-mcp-server.tar 발견 (크기: $server_size)"
     else
-        log_info "   ❌ server_image.tar.gz 없음"
+        log_info "   ❌ autoa-mcp-server.tar 없음"
     fi
     
-    if [[ -f "agent.pkg" ]]; then
-        local agent_size=$(du -h agent.pkg | cut -f1)
-        log_info "   ✅ agent.pkg 발견 (크기: $agent_size)"
+    if [[ -f "AutoA-Installer.pkg" ]]; then
+        local agent_size=$(du -h AutoA-Installer.pkg | cut -f1)
+        log_info "   ✅ AutoA-Installer.pkg 발견 (크기: $agent_size)"
     else
-        log_info "   ❌ agent.pkg 없음"
+        log_info "   ❌ AutoA-Installer.pkg 없음"
     fi
     
     log_info "   💡 기존 파일이 있으면 다운로드를 스킵하고 재사용합니다."

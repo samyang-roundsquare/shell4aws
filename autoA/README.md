@@ -7,7 +7,7 @@
 macOS 사용자는 다음 명령어로 자동 설치를 진행할 수 있습니다:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/autoA/main/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh)"
 ```
 
 ### 수동 설치

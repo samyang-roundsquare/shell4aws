@@ -10,6 +10,12 @@ macOS 사용자는 다음 명령어로 자동 설치를 진행할 수 있습니�
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/install.sh)"
 ```
 
+**💡 통합 버전의 장점:**
+- 단일 파일로 모든 기능 포함
+- `curl`로 직접 실행 가능
+- Google Drive 다운로드 문제 자동 해결
+- 외부 의존성 없음
+
 ### 수동 설치
 1. 저장소를 클론합니다:
 ```bash
@@ -150,15 +156,14 @@ sudo log show --predicate 'process == "installer"' --last 1h
 ## 📁 프로젝트 구조
 ```
 shell4aws/autoA/
-├── install.sh                # macOS 설치 스크립트
-├── download-helper.sh        # Google Drive 다운로드 헬퍼 (개선됨)
+├── install.sh                # macOS 설치 스크립트 (통합 버전)
 └── README.md                 # 프로젝트 문서
 ```
 
-### 다운로드 헬퍼 기능
-`download-helper.sh`는 Google Drive 파일 다운로드 문제를 해결하기 위한 강화된 스크립트입니다:
+### 통합된 설치 스크립트 기능
+`install.sh`는 모든 기능이 통합된 완전한 설치 스크립트입니다:
 
-**지원하는 다운로드 방법:**
+**Google Drive 다운로드 기능:**
 1. **curl** - 확인 토큰 처리 포함
 2. **wget** - 확인 토큰 처리 포함  
 3. **gdown** - Python 패키지 (자동 설치)
@@ -170,6 +175,7 @@ shell4aws/autoA/
 - 파일 유효성 검사
 - 자동 오류 복구
 - 상세한 사용자 안내
+- 단일 파일로 모든 기능 통합
 
 ## 🤝 기여하기
 1. Fork the Project

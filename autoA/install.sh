@@ -183,27 +183,43 @@ download_server_image() {
     # Google Drive 파일 URL (실제 파일 ID로 교체 필요)
     SERVER_FILE_URL="https://drive.google.com/file/d/1PhD7xtKZo5CmOkcIARM7V2BkZzeIr4H3/view?usp=sharing"
     log_info "서버 이미지 파일 다운로드 중..."
+    log_info "URL: $SERVER_FILE_URL"
     
     # 다운로드 헬퍼 스크립트 사용
     if [[ -f "../download-helper.sh" ]]; then
-        log_info "다운로드 헬퍼 스크립트를 사용합니다..."
+        log_info "개선된 다운로드 헬퍼 스크립트를 사용합니다..."
+        log_info "이 스크립트는 Google Drive의 직접 액세스 제한을 우회합니다..."
+        
         if ../download-helper.sh "$SERVER_FILE_URL" "server_image.tar.gz"; then
             log_success "서버 이미지 다운로드 완료"
+            
+            # 파일 유효성 검사
+            if [[ -f "server_image.tar.gz" && -s "server_image.tar.gz" ]]; then
+                local file_size=$(du -h server_image.tar.gz | cut -f1)
+                log_info "다운로드된 파일 크기: $file_size"
+                
+                # tar.gz 파일 유효성 검사
+                if tar -tzf server_image.tar.gz > /dev/null 2>&1; then
+                    log_success "서버 이미지 파일 유효성 검사 통과"
+                else
+                    log_error "다운로드된 파일이 유효한 tar.gz 형식이 아닙니다"
+                    log_info "파일이 손상되었을 수 있습니다. 다시 다운로드해주세요."
+                    exit 1
+                fi
+            else
+                log_error "다운로드된 파일이 비어있거나 존재하지 않습니다"
+                exit 1
+            fi
         else
             log_error "서버 이미지 다운로드 실패"
-            log_info "수동으로 다운로드 후 압축 해제해주세요."
+            log_info "다운로드 헬퍼 스크립트가 수동 다운로드 가이드를 제공했습니다."
+            log_info "수동으로 다운로드한 후 스크립트를 다시 실행하세요."
             exit 1
         fi
     else
-        # 기본 curl 다운로드 시도
-        log_info "기본 curl 다운로드를 시도합니다..."
-        if curl -L -o server_image.tar.gz "$SERVER_FILE_URL"; then
-            log_success "서버 이미지 다운로드 완료"
-        else
-            log_error "서버 이미지 다운로드 실패"
-            log_info "수동으로 다운로드 후 압축 해제해주세요."
-            exit 1
-        fi
+        log_error "다운로드 헬퍼 스크립트를 찾을 수 없습니다: ../download-helper.sh"
+        log_info "스크립트가 올바른 디렉토리에서 실행되고 있는지 확인하세요."
+        exit 1
     fi
 }
 
@@ -268,27 +284,42 @@ download_agent_package() {
     # Google Drive 파일 URL (실제 파일 ID로 교체 필요)
     AGENT_FILE_URL="https://drive.google.com/file/d/1cfMLZE5tto4IHQd4VmIfv0a2nR02MTwW/view?usp=sharing"
     log_info "에이전트 패키지 다운로드 중..."
+    log_info "URL: $AGENT_FILE_URL"
     
     # 다운로드 헬퍼 스크립트 사용
     if [[ -f "../download-helper.sh" ]]; then
-        log_info "다운로드 헬퍼 스크립트를 사용합니다..."
+        log_info "개선된 다운로드 헬퍼 스크립트를 사용합니다..."
+        log_info "이 스크립트는 Google Drive의 직접 액세스 제한을 우회합니다..."
+        
         if ../download-helper.sh "$AGENT_FILE_URL" "agent.pkg"; then
             log_success "에이전트 패키지 다운로드 완료"
+            
+            # 파일 유효성 검사
+            if [[ -f "agent.pkg" && -s "agent.pkg" ]]; then
+                local file_size=$(du -h agent.pkg | cut -f1)
+                log_info "다운로드된 파일 크기: $file_size"
+                
+                # pkg 파일 유효성 검사
+                if file agent.pkg | grep -q "xar archive\|Mac OS X installer package"; then
+                    log_success "에이전트 패키지 파일 유효성 검사 통과"
+                else
+                    log_warning "다운로드된 파일이 macOS 패키지 형식이 아닐 수 있습니다"
+                    log_info "파일이 손상되었을 수 있지만 설치를 계속 진행합니다."
+                fi
+            else
+                log_error "다운로드된 파일이 비어있거나 존재하지 않습니다"
+                exit 1
+            fi
         else
             log_error "에이전트 패키지 다운로드 실패"
-            log_info "수동으로 다운로드 후 설치해주세요."
+            log_info "다운로드 헬퍼 스크립트가 수동 다운로드 가이드를 제공했습니다."
+            log_info "수동으로 다운로드한 후 스크립트를 다시 실행하세요."
             exit 1
         fi
     else
-        # 기본 curl 다운로드 시도
-        log_info "기본 curl 다운로드를 시도합니다..."
-        if curl -L -o agent.pkg "$AGENT_FILE_URL"; then
-            log_success "에이전트 패키지 다운로드 완료"
-        else
-            log_error "에이전트 패키지 다운로드 실패"
-            log_info "수동으로 다운로드 후 설치해주세요."
-            exit 1
-        fi
+        log_error "다운로드 헬퍼 스크립트를 찾을 수 없습니다: ../download-helper.sh"
+        log_info "스크립트가 올바른 디렉토리에서 실행되고 있는지 확인하세요."
+        exit 1
     fi
 }
 
@@ -354,6 +385,13 @@ main() {
     log_info "- 인터넷 연결 상태 확인"
     log_info "- 관리자 권한 필요 (패키지 설치 시)"
     log_info "- 최소 10GB 디스크 공간 필요"
+    echo ""
+    
+    # Google Drive 다운로드 관련 안내
+    log_info "📋 Google Drive 파일 다운로드 안내:"
+    log_info "   이 설치 과정에서 Google Drive에서 파일을 다운로드합니다."
+    log_info "   Google Drive는 큰 파일의 직접 다운로드를 제한할 수 있습니다."
+    log_info "   자동 다운로드가 실패하면 수동 다운로드 가이드가 제공됩니다."
     echo ""
     
     # 사용자 확인

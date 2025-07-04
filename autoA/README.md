@@ -88,6 +88,7 @@ docker rm -f autoA-MCP
 ### 네트워크 요구사항
 - 인터넷 연결 (Homebrew, Docker, 파일 다운로드)
 - Google Drive 접근 권한
+- 큰 파일 다운로드를 위한 안정적인 네트워크 연결
 
 ## 🛠️ 문제 해결
 
@@ -115,6 +116,27 @@ sudo ./macos-install.sh
 - 프록시 설정 확인
 - DNS 설정 확인
 
+#### Google Drive 파일 다운로드 실패
+Google Drive는 큰 파일의 직접 다운로드를 제한할 수 있습니다. 다음과 같은 방법을 시도해보세요:
+
+**자동 해결 방법:**
+- 스크립트가 자동으로 여러 다운로드 방법을 시도합니다
+- curl, wget, gdown, rclone 등 다양한 도구를 사용합니다
+
+**수동 다운로드 방법:**
+1. 제공된 Google Drive URL로 이동
+2. '다운로드' 버튼을 클릭
+3. 파일을 `autoA` 디렉토리에 저장
+4. 스크립트를 다시 실행
+
+**파일 위치:**
+- 서버 이미지: `server_image.tar.gz`
+- 에이전트 패키지: `agent.pkg`
+
+**다운로드 URL:**
+- 서버 이미지: `https://drive.google.com/file/d/1PhD7xtKZo5CmOkcIARM7V2BkZzeIr4H3/view?usp=sharing`
+- 에이전트 패키지: `https://drive.google.com/file/d/1cfMLZE5tto4IHQd4VmIfv0a2nR02MTwW/view?usp=sharing`
+
 ### 로그 확인
 스크립트 실행 중 오류가 발생하면 다음을 확인하세요:
 ```bash
@@ -129,9 +151,25 @@ sudo log show --predicate 'process == "installer"' --last 1h
 ```
 shell4aws/autoA/
 ├── install.sh                # macOS 설치 스크립트
-├── download-helper.sh        # Google Drive 다운로드 헬퍼
+├── download-helper.sh        # Google Drive 다운로드 헬퍼 (개선됨)
 └── README.md                 # 프로젝트 문서
 ```
+
+### 다운로드 헬퍼 기능
+`download-helper.sh`는 Google Drive 파일 다운로드 문제를 해결하기 위한 강화된 스크립트입니다:
+
+**지원하는 다운로드 방법:**
+1. **curl** - 확인 토큰 처리 포함
+2. **wget** - 확인 토큰 처리 포함  
+3. **gdown** - Python 패키지 (자동 설치)
+4. **rclone** - 고급 방법 (자동 설치)
+5. **수동 다운로드** - 모든 자동 방법 실패 시
+
+**주요 기능:**
+- Google Drive의 직접 액세스 제한 우회
+- 파일 유효성 검사
+- 자동 오류 복구
+- 상세한 사용자 안내
 
 ## 🤝 기여하기
 1. Fork the Project

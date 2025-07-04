@@ -181,7 +181,7 @@ download_server_image() {
     cd "$TEMP_DIR"
     
     # Google Drive 파일 URL (실제 파일 ID로 교체 필요)
-    SERVER_FILE_URL="https://drive.google.com/file/d/1PhD7xtKZo5CmOkcIARM7V2BkZzeIr4H3/view?usp=drive_link"
+    SERVER_FILE_URL="https://drive.google.com/file/d/1PhD7xtKZo5CmOkcIARM7V2BkZzeIr4H3/view?usp=sharing"
     log_info "서버 이미지 파일 다운로드 중..."
     
     # 다운로드 헬퍼 스크립트 사용

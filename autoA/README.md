@@ -60,8 +60,9 @@ cd shell4aws/autoA
 
 ### 3단계: 서버 구성
 - Docker 서비스 상태 확인 및 실행
-- 기존 `autoa-mcp-server.tar` 파일 확인 및 재사용
+- 기존 `autoa-mcp-server.tar.gz` 파일 확인 및 재사용
 - 서버 이미지 다운로드 (기존 파일이 없을 경우)
+- gunzip 설치 확인 및 압축 해제
 - Docker 컨테이너 실행 (`autoA-MCP`)
 - 서비스 상태 확인 (포트 58787)
 
@@ -72,9 +73,10 @@ cd shell4aws/autoA
 - 설치된 파일 목록 확인
 
 **💡 기존 파일 재사용 기능:**
-- 현재 디렉토리에 `autoa-mcp-server.tar` 또는 `AutoA-Installer.pkg` 파일이 있으면 다운로드를 스킵합니다
+- 현재 디렉토리에 `autoa-mcp-server.tar.gz` 또는 `AutoA-Installer.pkg` 파일이 있으면 다운로드를 스킵합니다
 - 파일 크기와 유효성을 검사하여 손상된 파일은 자동으로 다시 다운로드합니다
 - HTML 페이지로 다운로드된 경우 자동으로 감지하고 재다운로드합니다
+- gzip 압축 파일은 자동으로 압축 해제 후 Docker 이미지로 로드합니다
 
 ### 5단계: 정리
 - 임시 파일 및 다운로드 파일 정리
@@ -166,7 +168,7 @@ Google Drive는 큰 파일의 직접 다운로드를 제한할 수 있습니다.
 - 로컬에서 스크립트를 실행하면 모든 기능이 정상 작동합니다
 
 **파일 위치:**
-- 서버 이미지: `autoa-mcp-server.tar`
+- 서버 이미지: `autoa-mcp-server.tar.gz` (gzip 압축)
 - 에이전트 패키지: `AutoA-Installer.pkg`
 
 **다운로드 URL:**

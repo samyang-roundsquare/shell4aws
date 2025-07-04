@@ -36,6 +36,46 @@ log_error() {
 }
 
 # =============================================================================
+# 유틸리티 함수들
+# =============================================================================
+
+# gunzip 설치 확인 및 설치
+check_and_install_gunzip() {
+    log_info "gunzip 설치 확인 중..."
+    
+    if command -v gunzip &> /dev/null; then
+        log_success "gunzip이 이미 설치되어 있습니다"
+        return 0
+    fi
+    
+    log_info "gunzip이 설치되지 않았습니다. 설치를 시도합니다..."
+    
+    # macOS에는 기본적으로 gunzip이 포함되어 있지만, 혹시 모르니 확인
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS에서는 gzip 패키지가 기본적으로 포함되어 있음
+        if command -v gzip &> /dev/null; then
+            log_success "macOS 기본 gzip을 사용합니다"
+            return 0
+        fi
+    fi
+    
+    # Homebrew로 설치 시도
+    if command -v brew &> /dev/null; then
+        log_info "Homebrew로 gzip 설치 중..."
+        if brew install gzip; then
+            log_success "gzip 설치 완료"
+            return 0
+        else
+            log_warning "Homebrew로 gzip 설치 실패"
+        fi
+    fi
+    
+    log_error "gunzip/gzip을 설치할 수 없습니다"
+    log_info "수동으로 gzip을 설치한 후 다시 실행하세요"
+    return 1
+}
+
+# =============================================================================
 # Google Drive 다운로드 기능 (download-helper.sh 통합)
 # =============================================================================
 
@@ -622,14 +662,14 @@ download_server_image() {
     log_info "3-1단계: 서버 이미지 다운로드 중..."
     
     # 현재 디렉토리에서 기존 파일 확인
-    if [[ -f "autoa-mcp-server.tar" ]]; then
-        log_info "현재 디렉토리에서 기존 autoa-mcp-server.tar 파일을 발견했습니다."
-        SERVER_FILE_PATH="autoa-mcp-server.tar"
-    elif [[ -f "$ORIGINAL_DIR/autoa-mcp-server.tar" ]]; then
-        log_info "스크립트 실행 디렉토리에서 기존 autoa-mcp-server.tar 파일을 발견했습니다."
-        SERVER_FILE_PATH="$ORIGINAL_DIR/autoa-mcp-server.tar"
+    if [[ -f "autoa-mcp-server.tar.gz" ]]; then
+        log_info "현재 디렉토리에서 기존 autoa-mcp-server.tar.gz 파일을 발견했습니다."
+        SERVER_FILE_PATH="autoa-mcp-server.tar.gz"
+    elif [[ -f "$ORIGINAL_DIR/autoa-mcp-server.tar.gz" ]]; then
+        log_info "스크립트 실행 디렉토리에서 기존 autoa-mcp-server.tar.gz 파일을 발견했습니다."
+        SERVER_FILE_PATH="$ORIGINAL_DIR/autoa-mcp-server.tar.gz"
     else
-        log_info "autoa-mcp-server.tar 파일을 찾을 수 없습니다."
+        log_info "autoa-mcp-server.tar.gz 파일을 찾을 수 없습니다."
         SERVER_FILE_PATH=""
     fi
     
@@ -677,16 +717,16 @@ download_server_image() {
     log_info "URL: $SERVER_FILE_URL"
     
     # 통합된 다운로드 함수 사용
-    if download_google_drive_file "$SERVER_FILE_URL" "autoa-mcp-server.tar"; then
+    if download_google_drive_file "$SERVER_FILE_URL" "autoa-mcp-server.tar.gz"; then
         log_success "서버 이미지 다운로드 완료"
         
         # 파일 유효성 검사
-        if [[ -f "autoa-mcp-server.tar" && -s "autoa-mcp-server.tar" ]]; then
-            local file_size=$(du -h autoa-mcp-server.tar | cut -f1)
+        if [[ -f "autoa-mcp-server.tar.gz" && -s "autoa-mcp-server.tar.gz" ]]; then
+            local file_size=$(du -h autoa-mcp-server.tar.gz | cut -f1)
             log_info "다운로드된 파일 크기: $file_size"
             
             # tar.gz 파일 유효성 검사
-            if tar -tzf autoa-mcp-server.tar > /dev/null 2>&1; then
+            if tar -tzf autoa-mcp-server.tar.gz > /dev/null 2>&1; then
                 log_success "서버 이미지 파일 유효성 검사 통과"
             else
                 log_error "다운로드된 파일이 유효한 tar.gz 형식이 아닙니다"
@@ -712,6 +752,20 @@ setup_server_container() {
     if docker ps -a --format "table {{.Names}}" | grep -q "autoA-MCP"; then
         log_info "기존 autoA-MCP 컨테이너 제거 중..."
         docker rm -f autoA-MCP
+    fi
+    
+    # gunzip 설치 확인
+    if ! check_and_install_gunzip; then
+        exit 1
+    fi
+    
+    # 압축 해제
+    log_info "서버 이미지 압축 해제 중..."
+    if gunzip -f autoa-mcp-server.tar.gz; then
+        log_success "압축 해제 완료"
+    else
+        log_error "압축 해제 실패"
+        exit 1
     fi
     
     # 이미지 로드
@@ -938,14 +992,14 @@ main() {
     log_info "📁 기존 파일 확인:"
     log_info "   스크립트 실행 디렉토리: $ORIGINAL_DIR"
     
-    if [[ -f "autoa-mcp-server.tar" ]]; then
-        local server_size=$(du -h autoa-mcp-server.tar | cut -f1)
-        log_info "   ✅ autoa-mcp-server.tar 발견 (크기: $server_size)"
-    elif [[ -f "$ORIGINAL_DIR/autoa-mcp-server.tar" ]]; then
-        local server_size=$(du -h "$ORIGINAL_DIR/autoa-mcp-server.tar" | cut -f1)
-        log_info "   ✅ $ORIGINAL_DIR/autoa-mcp-server.tar 발견 (크기: $server_size)"
+    if [[ -f "autoa-mcp-server.tar.gz" ]]; then
+        local server_size=$(du -h autoa-mcp-server.tar.gz | cut -f1)
+        log_info "   ✅ autoa-mcp-server.tar.gz 발견 (크기: $server_size)"
+    elif [[ -f "$ORIGINAL_DIR/autoa-mcp-server.tar.gz" ]]; then
+        local server_size=$(du -h "$ORIGINAL_DIR/autoa-mcp-server.tar.gz" | cut -f1)
+        log_info "   ✅ $ORIGINAL_DIR/autoa-mcp-server.tar.gz 발견 (크기: $server_size)"
     else
-        log_info "   ❌ autoa-mcp-server.tar 없음"
+        log_info "   ❌ autoa-mcp-server.tar.gz 없음"
     fi
     
     if [[ -f "AutoA-Installer.pkg" ]]; then

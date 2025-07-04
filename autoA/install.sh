@@ -8,6 +8,9 @@
 
 set -e  # 오류 발생 시 스크립트 중단
 
+# 스크립트 실행 디렉토리 저장 (curl로 실행 시 원본 디렉토리 보존)
+ORIGINAL_DIR="$PWD"
+
 # 색상 정의
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -621,36 +624,45 @@ download_server_image() {
     # 현재 디렉토리에서 기존 파일 확인
     if [[ -f "autoa-mcp-server.tar" ]]; then
         log_info "현재 디렉토리에서 기존 autoa-mcp-server.tar 파일을 발견했습니다."
-        
+        SERVER_FILE_PATH="autoa-mcp-server.tar"
+    elif [[ -f "$ORIGINAL_DIR/autoa-mcp-server.tar" ]]; then
+        log_info "스크립트 실행 디렉토리에서 기존 autoa-mcp-server.tar 파일을 발견했습니다."
+        SERVER_FILE_PATH="$ORIGINAL_DIR/autoa-mcp-server.tar"
+    else
+        log_info "autoa-mcp-server.tar 파일을 찾을 수 없습니다."
+        SERVER_FILE_PATH=""
+    fi
+    
+    if [[ -n "$SERVER_FILE_PATH" ]]; then
         # 파일 크기 확인
-        local file_size=$(du -h autoa-mcp-server.tar | cut -f1)
-        local file_size_bytes=$(stat -f%z autoa-mcp-server.tar 2>/dev/null || stat -c%s autoa-mcp-server.tar 2>/dev/null || echo 0)
+        local file_size=$(du -h "$SERVER_FILE_PATH" | cut -f1)
+        local file_size_bytes=$(stat -f%z "$SERVER_FILE_PATH" 2>/dev/null || stat -c%s "$SERVER_FILE_PATH" 2>/dev/null || echo 0)
         
         log_info "기존 파일 크기: $file_size"
         
         # 파일이 너무 작은지 확인 (HTML 페이지일 가능성)
         if [[ $file_size_bytes -lt 10000 ]]; then
             log_warning "기존 파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
-            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" autoa-mcp-server.tar; then
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$SERVER_FILE_PATH"; then
                 log_error "기존 파일이 HTML 페이지입니다. 삭제하고 다시 다운로드합니다."
-                rm -f autoa-mcp-server.tar
+                rm -f "$SERVER_FILE_PATH"
             else
                 log_info "파일이 유효한 것으로 보입니다. 계속 진행합니다."
             fi
         else
             # tar.gz 파일 유효성 검사
-            if tar -tzf autoa-mcp-server.tar > /dev/null 2>&1; then
+            if tar -tzf "$SERVER_FILE_PATH" > /dev/null 2>&1; then
                 log_success "기존 서버 이미지 파일 유효성 검사 통과"
                 log_info "기존 파일을 사용합니다. 다운로드를 스킵합니다."
                 
                 # 임시 디렉토리 생성 (다른 단계에서 사용)
                 TEMP_DIR=$(mktemp -d)
-                cp autoa-mcp-server.tar "$TEMP_DIR/"
+                cp "$SERVER_FILE_PATH" "$TEMP_DIR/"
                 cd "$TEMP_DIR"
                 return 0
             else
                 log_warning "기존 파일이 유효한 tar.gz 형식이 아닙니다. 다시 다운로드합니다."
-                rm -f autoa-mcp-server.tar
+                rm -f "$SERVER_FILE_PATH"
             fi
         fi
     fi
@@ -749,36 +761,45 @@ download_agent_package() {
     # 현재 디렉토리에서 기존 파일 확인
     if [[ -f "AutoA-Installer.pkg" ]]; then
         log_info "현재 디렉토리에서 기존 AutoA-Installer.pkg 파일을 발견했습니다."
-        
+        AGENT_FILE_PATH="AutoA-Installer.pkg"
+    elif [[ -f "$ORIGINAL_DIR/AutoA-Installer.pkg" ]]; then
+        log_info "스크립트 실행 디렉토리에서 기존 AutoA-Installer.pkg 파일을 발견했습니다."
+        AGENT_FILE_PATH="$ORIGINAL_DIR/AutoA-Installer.pkg"
+    else
+        log_info "AutoA-Installer.pkg 파일을 찾을 수 없습니다."
+        AGENT_FILE_PATH=""
+    fi
+    
+    if [[ -n "$AGENT_FILE_PATH" ]]; then
         # 파일 크기 확인
-        local file_size=$(du -h AutoA-Installer.pkg | cut -f1)
-        local file_size_bytes=$(stat -f%z AutoA-Installer.pkg 2>/dev/null || stat -c%s AutoA-Installer.pkg 2>/dev/null || echo 0)
+        local file_size=$(du -h "$AGENT_FILE_PATH" | cut -f1)
+        local file_size_bytes=$(stat -f%z "$AGENT_FILE_PATH" 2>/dev/null || stat -c%s "$AGENT_FILE_PATH" 2>/dev/null || echo 0)
         
         log_info "기존 파일 크기: $file_size"
         
         # 파일이 너무 작은지 확인 (HTML 페이지일 가능성)
         if [[ $file_size_bytes -lt 10000 ]]; then
             log_warning "기존 파일이 너무 작습니다 ($file_size_bytes bytes). HTML 페이지일 수 있습니다."
-            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" AutoA-Installer.pkg; then
+            if grep -q "<!DOCTYPE html\|<html\|<title>Google Drive\|<title>Sign in" "$AGENT_FILE_PATH"; then
                 log_error "기존 파일이 HTML 페이지입니다. 삭제하고 다시 다운로드합니다."
-                rm -f AutoA-Installer.pkg
+                rm -f "$AGENT_FILE_PATH"
             else
                 log_info "파일이 유효한 것으로 보입니다. 계속 진행합니다."
             fi
         else
             # pkg 파일 유효성 검사
-            if file AutoA-Installer.pkg | grep -q "xar archive\|Mac OS X installer package"; then
+            if file "$AGENT_FILE_PATH" | grep -q "xar archive\|Mac OS X installer package"; then
                 log_success "기존 에이전트 패키지 파일 유효성 검사 통과"
                 log_info "기존 파일을 사용합니다. 다운로드를 스킵합니다."
                 
                 # 임시 디렉토리 생성 (다른 단계에서 사용)
                 AGENT_TEMP_DIR=$(mktemp -d)
-                cp AutoA-Installer.pkg "$AGENT_TEMP_DIR/"
+                cp "$AGENT_FILE_PATH" "$AGENT_TEMP_DIR/"
                 cd "$AGENT_TEMP_DIR"
                 return 0
             else
                 log_warning "기존 파일이 유효한 pkg 형식이 아닐 수 있습니다. 다시 다운로드합니다."
-                rm -f AutoA-Installer.pkg
+                rm -f "$AGENT_FILE_PATH"
             fi
         fi
     fi
@@ -915,9 +936,14 @@ main() {
     
     # 기존 파일 확인 안내
     log_info "📁 기존 파일 확인:"
+    log_info "   스크립트 실행 디렉토리: $ORIGINAL_DIR"
+    
     if [[ -f "autoa-mcp-server.tar" ]]; then
         local server_size=$(du -h autoa-mcp-server.tar | cut -f1)
         log_info "   ✅ autoa-mcp-server.tar 발견 (크기: $server_size)"
+    elif [[ -f "$ORIGINAL_DIR/autoa-mcp-server.tar" ]]; then
+        local server_size=$(du -h "$ORIGINAL_DIR/autoa-mcp-server.tar" | cut -f1)
+        log_info "   ✅ $ORIGINAL_DIR/autoa-mcp-server.tar 발견 (크기: $server_size)"
     else
         log_info "   ❌ autoa-mcp-server.tar 없음"
     fi
@@ -925,6 +951,9 @@ main() {
     if [[ -f "AutoA-Installer.pkg" ]]; then
         local agent_size=$(du -h AutoA-Installer.pkg | cut -f1)
         log_info "   ✅ AutoA-Installer.pkg 발견 (크기: $agent_size)"
+    elif [[ -f "$ORIGINAL_DIR/AutoA-Installer.pkg" ]]; then
+        local agent_size=$(du -h "$ORIGINAL_DIR/AutoA-Installer.pkg" | cut -f1)
+        log_info "   ✅ $ORIGINAL_DIR/AutoA-Installer.pkg 발견 (크기: $agent_size)"
     else
         log_info "   ❌ AutoA-Installer.pkg 없음"
     fi

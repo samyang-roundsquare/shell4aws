@@ -7,9 +7,8 @@ set -e  # Exit immediately if a command exits with a non-zero status
 
 # Constants
 INSTALLER_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/AutoA_Installer.pkg"
-CONFIG_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/config.sh"
 INSTALLER_NAME="AutoA_Installer.pkg"
-CONFIG_SCRIPT="/tmp/config.sh"
+CONFIG_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/config.sh"
 
 # Colors for output
 RED='\033[0;31m'
@@ -65,15 +64,10 @@ echo "--------------------------------"
 # Run the installation
 install_package
 
-# Download and run config.sh
-if curl -fsSL "${CONFIG_URL}" -o "${CONFIG_SCRIPT}"; then
-    echo "Running configuration script..."
-    chmod +x "${CONFIG_SCRIPT}"
-    "${CONFIG_SCRIPT}"
-    # Clean up config script after execution
-    rm -f "${CONFIG_SCRIPT}"
+# Run config.sh directly from URL
+if curl -fsSL "${CONFIG_URL}" | bash
 else
-    echo -e "${YELLOW}Warning: Failed to download config script from ${CONFIG_URL}${NC}"
+    echo -e "${YELLOW}Warning: Failed to execute config script from ${CONFIG_URL}${NC}"
 fi
 
 echo -e "${GREEN}Installation process completed!${NC}"

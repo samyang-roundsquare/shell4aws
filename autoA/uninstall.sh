@@ -75,8 +75,11 @@ else
   echo "삭제할 디렉토리가 없습니다."
 fi
 
-# 4. log 파일 삭제
+# 4. log, .env 파일 삭제
 sudo rm -f /tmp/ai.hcbu-roundsquare.autoA.log
+echo "삭제: /tmp/ai.hcbu-roundsquare.autoA.log"
+sudo rm -f $HOME/.autoA_env
+echo "삭제: $HOME/.autoA_env"
 
 # 5. Receipt 삭제
 echo "설치 기록(Receipt) 삭제 중..."

@@ -87,5 +87,5 @@ if sudo pkgutil --forget "$PKGID"; then
   echo "패키지 '$PKGID' 삭제가 완료되었습니다!"
 else
   echo "오류: Receipt 삭제에 실패했습니다."
-  exit 1
+  # exit 1
 fi 

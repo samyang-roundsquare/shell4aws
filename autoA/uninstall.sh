@@ -2,7 +2,7 @@
 
 # 사용법: sudo ./uninstall.sh [<package-id>]
 # 예시: sudo ./uninstall.sh ai.hcbu-roundsquare
-# 패키지 ID를 생략하면 AppleScript 기본값(ai.hcbu-roundsquare.autoA) 사용
+# 패키지 ID를 생략하면 AppleScript 기본값(ai.hcbu-roundsquare) 사용
 # 패키지 파일은 AppleScript/packages/pkg/에 생성됩니다.
 # 소스 파일은 AppleScript/src/에 있습니다.
 

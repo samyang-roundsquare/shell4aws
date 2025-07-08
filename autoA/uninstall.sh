@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # 사용법: sudo ./uninstall.sh [<package-id>]
-# 예시: sudo ./uninstall.sh ai.hcbu-roundsquare.autoA
+# 예시: sudo ./uninstall.sh ai.hcbu-roundsquare
 # 패키지 ID를 생략하면 AppleScript 기본값(ai.hcbu-roundsquare.autoA) 사용
 # 패키지 파일은 AppleScript/packages/pkg/에 생성됩니다.
 # 소스 파일은 AppleScript/src/에 있습니다.
 
-PKGID="${1:-ai.hcbu-roundsquare.autoA}"
+PKGID="${1:-ai.hcbu-roundsquare}"
 
 if [ -z "$PKGID" ]; then
   echo "사용법: sudo $0 [<package-id>]"

@@ -65,8 +65,8 @@ echo "--------------------------------"
 install_package
 
 # Run config.sh directly from URL
-if curl -fsSL "${CONFIG_URL}" | bash
-else
+echo "Running configuration script..."
+if ! curl -fsSL "${CONFIG_URL}" | bash; then
     echo -e "${YELLOW}Warning: Failed to execute config script from ${CONFIG_URL}${NC}"
 fi
 

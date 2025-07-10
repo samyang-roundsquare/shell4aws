@@ -76,10 +76,12 @@ else
 fi
 
 # 4. log, .env 파일 삭제
-sudo rm -f /tmp/ai.hcbu-roundsquare.pcalivecheck.err.log
-echo "삭제: /tmp/ai.hcbu-roundsquare.pcalivecheck.err.log"
-sudo rm -f /tmp/ai.hcbu-roundsquare.pcalivecheck.out.log
-echo "삭제: /tmp/ai.hcbu-roundsquare.pcalivecheck.out.log"
+sudo rm -f /tmp/pcalivecheck.install.log
+echo "삭제: /tmp/pcalivecheck.install.log"
+sudo rm -f /tmp/pcalivecheck.err.log
+echo "삭제: /tmp/pcalivecheck.err.log"
+sudo rm -f /tmp/pcalivecheck.out.log
+echo "삭제: /tmp/pcalivecheck.out.log"
 # sudo rm -f $HOME/.autoA_env
 # echo "삭제: $HOME/.autoA_env"
 

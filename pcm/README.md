@@ -33,7 +33,7 @@ Run the following command in Terminal:
 ### Method 2: Manual Installation
 1. Run the configuration script:
    ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/config.sh)"
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/config.sh)"
    ```
 2. Download the installer package:
    ```bash

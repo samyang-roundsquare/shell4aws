@@ -6,9 +6,11 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 
 # Constants
-INSTALLER_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/PCAliveCheck-Installer.pkg"
+CONFIG_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/config.sh"
+INSTALLER_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/pkg/PCAliveCheck-Installer.pkg"
 INSTALLER_NAME="PCAliveCheck-Installer.pkg"
-CONFIG_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/autoA/config.sh"
+WA_INSTALLER_URL="https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/pkg/EdgeNode-Installer.pkg"
+WA_INSTALLER_NAME="EdgeNode-Installer.pkg"
 
 # Colors for output
 RED='\033[0;31m'
@@ -47,6 +49,7 @@ fi
 install_package() {
     local temp_dir=$(mktemp -d)
     local installer_path="${temp_dir}/${INSTALLER_NAME}"
+    local wa_installer_path="${temp_dir}/${WA_INSTALLER_NAME}"
     
     echo "Downloading ${INSTALLER_NAME}..."
     if ! curl -fsSL "${INSTALLER_URL}" -o "${installer_path}"; then
@@ -56,6 +59,16 @@ install_package() {
     echo "Installing ${INSTALLER_NAME}..."
     if ! sudo installer -pkg "${installer_path}" -target /; then
         error_exit "Failed to install ${INSTALLER_NAME}"
+    fi
+    
+    echo "Downloading ${WA_INSTALLER_NAME}..."
+    if ! curl -fsSL "${WA_INSTALLER_URL}" -o "${wa_installer_path}"; then
+        error_exit "Failed to download ${WA_INSTALLER_NAME}"
+    fi
+    
+    echo "Installing ${WA_INSTALLER_NAME}..."
+    if ! sudo installer -pkg "${wa_installer_path}" -target /; then
+        error_exit "Failed to install ${WA_INSTALLER_NAME}"
     fi
     
     # Clean up

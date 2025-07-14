@@ -60,27 +60,71 @@ This script handles the installation of both PCAliveCheck and EdgeNode component
 - Sets up necessary system configurations
 - Starts both services
 
-### uninstall.sh
-Use this script to completely remove PCAliveCheck and/or EdgeNode from your system.
+## 제거(언인스톨) 방법
 
-**Usage:**
+### uninstall.sh 스크립트 사용법
+
+`uninstall.sh` 스크립트는 PCAliveCheck 또는 EdgeNode를 완전히 삭제할 때 사용합니다. 반드시 **관리자 권한(sudo)** 으로 실행해야 하며, 아래와 같이 패키지 ID를 인자로 전달합니다.
+
 ```bash
-# Uninstall PCAliveCheck
-sudo /path/to/uninstall.sh ai.hcbu-roundsquare.pcalivecheck
+# PCAliveCheck 삭제
+sudo ./uninstall.sh ai.hcbu-roundsquare.pcalivecheck
 
-# Uninstall EdgeNode
-sudo /path/to/uninstall.sh ai.hcbu-roundsquare.edgenode
-
-# Uninstall both (run both commands)
-sudo /path/to/uninstall.sh ai.hcbu-roundsquare.pcalivecheck
-sudo /path/to/uninstall.sh ai.hcbu-roundsquare.edgenode
+# EdgeNode 삭제
+sudo ./uninstall.sh ai.hcbu-roundsquare.edgenode
 ```
 
-**Features:**
-- Stops the appropriate service(s)
-- Removes all installed components
-- Cleans up configuration files and caches
-- Handles user-specific data for all users
+- 패키지 ID를 생략하면 기본값으로 PCAliveCheck(`ai.hcbu-roundsquare.pcalivecheck`)가 삭제됩니다.
+- 두 패키지를 모두 삭제하려면 위 명령을 각각 실행하세요.
+
+#### 설치된 패키지 ID 확인 방법
+```bash
+pkgutil --pkgs | grep hcbu-roundsquare
+```
+
+### 삭제 동작 상세 설명
+
+- **설치 파일 및 심볼릭 링크 삭제**:
+  - 패키지로 설치된 모든 파일과 심볼릭 링크를 자동으로 찾아 삭제합니다.
+- **빈 디렉토리 정리**: 
+  - 설치 경로 내에 남아있는 빈 디렉토리를 하위부터 역순으로 삭제합니다.
+- **EdgeNode 전용 추가 정리**:
+  - 모든 사용자(`/Users/*`)의 `.autoA_edge` 디렉토리 및 내부 `node_modules` 삭제
+  - EdgeNode 관련 LaunchAgent 중지 및 `yarn stop` 실행, 프로세스 강제 종료
+  - `/Users/Shared/.autoA_edge` 디렉토리 삭제
+  - EdgeNode 관련 로그(`/tmp/edgenode.*.log`) 삭제
+- **PCAliveCheck 전용 추가 정리**:
+  - PCAliveCheck 관련 로그(`/tmp/pcalivecheck.*.log`) 삭제
+- **설치 기록(Receipt) 삭제**:
+  - `sudo pkgutil --forget <패키지ID>` 명령으로 macOS의 패키지 설치 기록도 완전히 삭제합니다.
+
+### 주의사항 및 권장 사항
+- 반드시 **sudo**로 실행해야 모든 파일/디렉토리 삭제가 정상적으로 동작합니다.
+- EdgeNode 삭제 시, 모든 사용자의 홈 디렉토리 내 `.autoA_edge` 폴더가 삭제되므로, 중요한 데이터가 있다면 미리 백업하세요.
+- 삭제 후에도 일부 사용자 데이터나 로그가 남아있을 수 있으니, 필요시 수동으로 확인하세요.
+- 삭제 과정에서 오류가 발생해도 대부분 무시하고 계속 진행합니다. (예: 이미 삭제된 파일/디렉토리)
+
+### 예시 출력
+```
+패키지 아이디: ai.hcbu-roundsquare.edgenode
+설치 파일 목록 추출 중...
+설치 경로: /
+설치 파일 삭제 중...
+삭제: /usr/local/bin/edgenode
+...
+Edge Node 서비스 중지 중...
+사용자 user1의 Edge Node 서비스 중지 중...
+yarn stop 실행 중: /Users/user1/.autoA_edge
+...
+삭제: /Users/user1/.autoA_edge
+삭제: /Users/Shared/.autoA_edge
+삭제: /tmp/edgenode.install.log
+...
+설치 기록(Receipt) 삭제 중...
+패키지 'ai.hcbu-roundsquare.edgenode' 삭제가 완료되었습니다!
+```
+
+---
 
 ## Troubleshooting
 

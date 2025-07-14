@@ -21,8 +21,8 @@
 # 기본 패키지 ID 설정 (PCAliveCheck)
 if [ -z "$1" ]; then
   echo "패키지 ID가 지정되지 않아 PCAliveCheck와 EdgeNode를 모두 삭제합니다."
-  bash "$0" ai.hcbu-roundsquare.pcalivecheck
-  bash "$0" ai.hcbu-roundsquare.edgenode
+  curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh | bash -s -- ai.hcbu-roundsquare.pcalivecheck
+  curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh | bash -s -- ai.hcbu-roundsquare.edgenode
   exit 0
 fi
 PKGID="$1"

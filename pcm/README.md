@@ -72,6 +72,8 @@ This script handles the installation of both PCAliveCheck and EdgeNode component
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh)"
 ```
 - 위 명령은 PCAliveCheck와 EdgeNode를 모두 삭제합니다.
+- 내부적으로 uninstall.sh가 curl로 두 번 재호출되어 두 패키지가 순차적으로 삭제됩니다.
+- 이 방식은 어떤 환경(터미널, 파이프, 임시파일 등)에서도 안전하게 동작합니다.
 
 #### 단일 패키지 삭제 (인자 필요)
 - bash -c 방식은 인자 전달이 불가하므로, 단일 패키지 삭제는 아래처럼 사용하세요:

@@ -66,16 +66,21 @@ This script handles the installation of both PCAliveCheck and EdgeNode component
 
 `uninstall.sh` 스크립트는 PCAliveCheck 또는 EdgeNode를 완전히 삭제할 때 사용합니다. 반드시 **관리자 권한(sudo)** 으로 실행해야 하며, 아래와 같이 패키지 ID를 인자로 전달합니다.
 
+#### 온라인 원라인 실행 (권장)
 ```bash
-# PCAliveCheck 삭제
-sudo ./uninstall.sh ai.hcbu-roundsquare.pcalivecheck
-
-# EdgeNode 삭제
-sudo ./uninstall.sh ai.hcbu-roundsquare.edgenode
+# 두 패키지 모두 삭제 (인자 없이 실행)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh)"
 ```
+- 위 명령은 PCAliveCheck와 EdgeNode를 모두 삭제합니다.
 
-- 패키지 ID를 생략하면 기본값으로 PCAliveCheck(`ai.hcbu-roundsquare.pcalivecheck`)가 삭제됩니다.
-- 두 패키지를 모두 삭제하려면 위 명령을 각각 실행하세요.
+#### 단일 패키지 삭제 (인자 필요)
+- bash -c 방식은 인자 전달이 불가하므로, 단일 패키지 삭제는 아래처럼 사용하세요:
+```bash
+curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh | bash -s -- ai.hcbu-roundsquare.pcalivecheck
+curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh | bash -s -- ai.hcbu-roundsquare.edgenode
+```
+- `| bash -s -- <패키지ID>` 방식으로 인자를 전달해야 원하는 패키지가 삭제됩니다.
+- **인자를 생략하면 PCAliveCheck와 EdgeNode가 모두 삭제**됩니다.
 
 #### 설치된 패키지 ID 확인 방법
 ```bash

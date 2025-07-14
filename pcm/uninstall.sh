@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# 온라인 원라인 제거(언인스톨) 방법:
+#
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh)"
+#
+# 위 명령을 터미널에 입력하면 최신 uninstall.sh가 자동으로 다운로드되어 실행됩니다.
+# (인자 없이 실행 시 PCAliveCheck와 EdgeNode가 모두 삭제됩니다)
+#
+# 단일 패키지만 삭제하려면 아래처럼 사용하세요:
+#   curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh | bash -s -- ai.hcbu-roundsquare.pcalivecheck
+#   curl -fsSL https://raw.githubusercontent.com/samyang-roundsquare/shell4aws/main/pcm/uninstall.sh | bash -s -- ai.hcbu-roundsquare.edgenode
+
 # 사용법: sudo ./uninstall.sh [<package-id>]
 # 예시 1 (PCAliveCheck): sudo ./uninstall.sh ai.hcbu-roundsquare.pcalivecheck
 # 예시 2 (EdgeNode): sudo ./uninstall.sh ai.hcbu-roundsquare.edgenode
@@ -8,7 +19,13 @@
 # 소스 파일은 각 프로젝트의 src/ 디렉토리에 있습니다.
 
 # 기본 패키지 ID 설정 (PCAliveCheck)
-PKGID="${1:-ai.hcbu-roundsquare.pcalivecheck}"
+if [ -z "$1" ]; then
+  echo "패키지 ID가 지정되지 않아 PCAliveCheck와 EdgeNode를 모두 삭제합니다."
+  bash "$0" ai.hcbu-roundsquare.pcalivecheck
+  bash "$0" ai.hcbu-roundsquare.edgenode
+  exit 0
+fi
+PKGID="$1"
 
 if [ -z "$PKGID" ]; then
   echo "사용법: sudo $0 [<package-id>]"
